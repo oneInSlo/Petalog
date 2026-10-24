@@ -8,7 +8,7 @@ Vsi zasloni imajo enako ogrodje:
 
 ## 1. Lastnik – nadzorna plošča
 
-![Lastnik – nadzorna plošča](img/01_lastnik_nadzorna_plosca.png)
+![Lastnik – nadzorna plošča](wireframes/WF-01-lastnik_nadzorna_plosca.png)
 
 Začetna stran lastnika po prijavi.
 - Pod pozdravom je kratek povzetek (npr. število prihodnjih terminov in zapadlih cepljenj), desno pa gumba **Dodaj žival** in **Naroči termin**.
@@ -19,7 +19,7 @@ Začetna stran lastnika po prijavi.
 
 ## 2. Veterinar – obravnava pacienta
 
-![Veterinar – obravnava pacienta](img/02_veterinar_obravnava_pacienta.png)
+![Veterinar – obravnava pacienta](wireframes/WF-02-veterinar_obravnava_pacienta.png)
 
 Osrednji delovni zaslon veterinarja med obravnavo. V zgornji vrstici sta ime živali, ura in storitev termina. Zaslon je razdeljen na dva stolpca:
 - **Levi stolpec:**
@@ -37,7 +37,7 @@ Osrednji delovni zaslon veterinarja med obravnavo. V zgornji vrstici sta ime ži
 
 ## 3. Lastnik – izbira termina
 
-![Lastnik – izbira termina](img/03_lastnik_izbira_termina.png)
+![Lastnik – izbira termina](wireframes/WF-03-lastnik_izbira_termina.png)
 
 Tretji korak naročanja termina.
 - Na vrhu je **potek naročanja v štirih korakih**: *Žival → Storitev → Veterinar in datum → Prost termin*. Zaključena koraka sta označena s kljukico, trenutni korak je poudarjen.
