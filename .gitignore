@@ -1,0 +1,41 @@
+# ===== OS =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== Editors / IDE =====
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+
+# ===== env files =====
+.env
+.env.*
+!.env.example
+
+# ===== Node.js (frontend and backend) =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# ===== Build outputs (Vite, TypeScript) =====
+dist/
+build/
+*.tsbuildinfo
+.vite/
+
+# ===== Tests (Vitest) =====
+coverage/
+
+# ===== Logs and temp files =====
+logs/
+*.log
+tmp/
+
+# ===== Docker =====
+pgdata/
+docker-compose.override.yml
