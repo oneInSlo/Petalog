@@ -44,6 +44,9 @@
   --color-sp-cat: var(--sp-cat);
   --color-sp-rabbit: var(--sp-rabbit);
   --color-sp-hamster: var(--sp-hamster);
+  --color-sp-guinea-pig: var(--sp-guinea-pig);
+  --color-sp-ferret: var(--sp-ferret);
+  --color-sp-bird: var(--sp-bird);
   --color-overlay: var(--overlay);
 }
 
@@ -74,6 +77,9 @@
   --sp-cat: #f6e9df;
   --sp-rabbit: #e4e9ef;
   --sp-hamster: #f3ead8;
+  --sp-guinea-pig: #f5e6e8;
+  --sp-ferret: #ece8f0;
+  --sp-bird: #e3f0f4;
   --overlay: rgba(31, 42, 46, 0.45);
 }
 
