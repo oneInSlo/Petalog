@@ -1,17 +1,8 @@
 import type { CookieOptions, Request, Response } from "express";
 import { env } from "../../config/index.js";
-import { AppError } from "../../lib/errors.js";
 import { loginSchema, registerSchema } from "./auth.schemas.js";
-import {
-  getCurrentUser,
-  loginUser,
-  NOT_LOGGED_IN_MESSAGE,
-  registerOwner,
-  type PublicUser,
-} from "./auth.service.js";
-import { signToken, TOKEN_LIFETIME_MS, verifyToken } from "./auth.token.js";
-
-const AUTH_COOKIE = "token";
+import { loginUser, registerOwner, type PublicUser } from "./auth.service.js";
+import { AUTH_COOKIE, signToken, TOKEN_LIFETIME_MS } from "./auth.token.js";
 
 const cookieOptions: CookieOptions = {
   httpOnly: true,
@@ -44,11 +35,6 @@ export function logout(_req: Request, res: Response) {
   res.status(204).end();
 }
 
-export async function me(req: Request, res: Response) {
-  const payload = verifyToken(req.cookies[AUTH_COOKIE] ?? "", env.JWT_SECRET);
-  if (!payload) {
-    throw new AppError(401, NOT_LOGGED_IN_MESSAGE);
-  }
-
-  res.json({ user: await getCurrentUser(payload.userId) });
+export function me(req: Request, res: Response) {
+  res.json({ user: req.user });
 }
