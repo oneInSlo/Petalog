@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "../../lib/prisma.js";
-import { createStaff, deactivateStaff, listStaff } from "./users.service.js";
+import { activateStaff, createStaff, deactivateStaff, listStaff } from "./users.service.js";
 
 vi.mock("../../lib/prisma.js", () => ({
   prisma: {
@@ -107,5 +107,30 @@ describe("deactivateStaff", () => {
     findUnique.mockResolvedValue(null);
 
     await expect(deactivateStaff(99, 1)).rejects.toMatchObject({ status: 404 });
+  });
+});
+
+describe("activateStaff", () => {
+  it("activates a deactivated staff member", async () => {
+    findUnique.mockResolvedValue({ ...veterinarian, isActive: false });
+    update.mockResolvedValue(veterinarian);
+
+    const user = await activateStaff(2);
+
+    expect(update).toHaveBeenCalledWith({ where: { id: 2 }, data: { isActive: true } });
+    expect(user.isActive).toBe(true);
+  });
+
+  it("does not activate an owner", async () => {
+    findUnique.mockResolvedValue({ ...veterinarian, role: "OWNER" });
+
+    await expect(activateStaff(2)).rejects.toMatchObject({ status: 404 });
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it("returns status 404 for an unknown user", async () => {
+    findUnique.mockResolvedValue(null);
+
+    await expect(activateStaff(99)).rejects.toMatchObject({ status: 404 });
   });
 });
