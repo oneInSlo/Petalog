@@ -1,12 +1,10 @@
-import { Prisma, Role, type User } from "@prisma/client";
+import { Role, type User } from "@prisma/client";
 import bcrypt from "bcrypt";
-import { AppError } from "../../lib/errors.js";
+import { AppError, isPrismaError, UNIQUE_CONSTRAINT_VIOLATION } from "../../lib/errors.js";
 import { prisma } from "../../lib/prisma.js";
 import type { LoginInput, RegisterInput } from "./auth.schemas.js";
 
 const BCRYPT_ROUNDS = 10;
-const UNIQUE_CONSTRAINT_VIOLATION = "P2002";
-
 export const NOT_LOGGED_IN_MESSAGE = "Niste prijavljeni";
 
 // Compared against when the user does not exist, so the response time does not reveal it
@@ -31,10 +29,7 @@ export async function createAccount({
   try {
     return await prisma.user.create({ data: { ...data, passwordHash } });
   } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === UNIQUE_CONSTRAINT_VIOLATION
-    ) {
+    if (isPrismaError(error, UNIQUE_CONSTRAINT_VIOLATION)) {
       const message = "Uporabnik s tem e-poštnim naslovom že obstaja";
       throw new AppError(409, message, [{ field: "email", message }]);
     }
