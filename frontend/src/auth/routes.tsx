@@ -1,4 +1,5 @@
 import { Navigate, Outlet } from "react-router";
+import { ForbiddenPage } from "../pages/ForbiddenPage";
 import { useAuth } from "./AuthContext";
 import { homePaths, type Role } from "./roles";
 
@@ -15,7 +16,7 @@ export function ProtectedRoute({ roles }: { roles: Role[] }) {
 
   if (loading) return <Loading />;
   if (!user) return <Navigate to="/login" replace />;
-  if (!roles.includes(user.role)) return <Navigate to={homePaths[user.role]} replace />;
+  if (!roles.includes(user.role)) return <ForbiddenPage />;
   return <Outlet />;
 }
 
