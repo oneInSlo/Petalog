@@ -1,4 +1,4 @@
-import { LayoutDashboard, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, UserCog, type LucideIcon } from "lucide-react";
 
 export type Role = "OWNER" | "RECEPTIONIST" | "VETERINARIAN" | "ADMIN";
 
@@ -8,7 +8,7 @@ export const homePaths: Record<Role, string> = {
   OWNER: "/owner",
   RECEPTIONIST: "/receptionist",
   VETERINARIAN: "/veterinarian",
-  ADMIN: "/admin",
+  ADMIN: "/admin/staff",
 };
 
 export const roleLabels: Record<Role, string> = {
@@ -19,5 +19,8 @@ export const roleLabels: Record<Role, string> = {
 };
 
 export function navItems(role: Role): NavItem[] {
+  if (role === "ADMIN") {
+    return [{ label: "Osebje", to: homePaths.ADMIN, icon: UserCog }];
+  }
   return [{ label: "Nadzorna plošča", to: homePaths[role], icon: LayoutDashboard }];
 }
