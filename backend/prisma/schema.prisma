@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  RECEPTIONIST
+  VETERINARIAN
+  ADMIN
+}
+
+enum Species {
+  DOG
+  CAT
+  RABBIT
+  HAMSTER
+  GUINEA_PIG
+  FERRET
+  BIRD
+}
+
+enum Sex {
+  MALE
+  FEMALE
+  UNKNOWN
+}
+
+enum RecordStatus {
+  DRAFT
+  CLOSED
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  firstName    String
+  lastName     String
+  email        String   @unique
+  passwordHash String
+  phone        String?
+  role         Role
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  animals          Animal[]
+  allergies        Allergy[]
+  medicalRecords   MedicalRecord[]
+  recordAddenda    RecordAddendum[]
+  vaccinations     Vaccination[]
+}
+
+model Animal {
+  id              Int       @id @default(autoincrement())
+  ownerId         Int
+  name            String
+  species         Species
+  breed           String?
+  sex             Sex
+  dateOfBirth     DateTime? @db.Date
+  microchipNumber String?   @unique
+  createdAt       DateTime  @default(now())
+
+  owner          User            @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  allergies      Allergy[]
+  medicalRecords MedicalRecord[]
+  vaccinations   Vaccination[]
+
+  @@index([ownerId])
+}
+
+model Allergy {
+  id           Int      @id @default(autoincrement())
+  animalId     Int
+  allergen     String
+  description  String?
+  recordedById Int
+  createdAt    DateTime @default(now())
+
+  animal     Animal @relation(fields: [animalId], references: [id], onDelete: Restrict)
+  recordedBy User   @relation(fields: [recordedById], references: [id], onDelete: Restrict)
+
+  @@index([animalId])
+}
+
+model MedicalRecord {
+  id             Int          @id @default(autoincrement())
+  animalId       Int
+  veterinarianId Int
+  anamnesis      String       @db.Text
+  diagnosis      String       @db.Text
+  therapy        String?      @db.Text
+  status         RecordStatus @default(DRAFT)
+  closedAt       DateTime?
+  createdAt      DateTime     @default(now())
+
+  animal       Animal           @relation(fields: [animalId], references: [id], onDelete: Restrict)
+  veterinarian User             @relation(fields: [veterinarianId], references: [id], onDelete: Restrict)
+  addenda      RecordAddendum[]
+
+  @@index([animalId])
+}
+
+model RecordAddendum {
+  id        Int      @id @default(autoincrement())
+  recordId  Int
+  authorId  Int
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  record MedicalRecord @relation(fields: [recordId], references: [id], onDelete: Restrict)
+  author User          @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([recordId])
+}
+
+model Vaccine {
+  id             Int     @id @default(autoincrement())
+  name           String
+  species        Species
+  intervalMonths Int
+  isActive       Boolean @default(true)
+
+  vaccinations Vaccination[]
+
+  @@unique([name, species])
+}
+
+model Vaccination {
+  id              Int      @id @default(autoincrement())
+  animalId        Int
+  vaccineId       Int
+  veterinarianId  Int
+  vaccinationDate DateTime @db.Date
+  intervalMonths  Int
+  nextDueDate     DateTime @db.Date
+  batchNumber     String?
+  createdAt       DateTime @default(now())
+
+  animal       Animal  @relation(fields: [animalId], references: [id], onDelete: Restrict)
+  vaccine      Vaccine @relation(fields: [vaccineId], references: [id], onDelete: Restrict)
+  veterinarian User    @relation(fields: [veterinarianId], references: [id], onDelete: Restrict)
+
+  @@index([animalId])
+  @@index([nextDueDate])
+}

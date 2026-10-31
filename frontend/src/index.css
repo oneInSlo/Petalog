@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+@theme inline {
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --font-display: "Fredoka", system-ui, sans-serif;
+  --font-sans: "Figtree", system-ui, sans-serif;
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-dialog: 0 20px 48px -12px rgba(31, 42, 46, 0.25);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-canvas: var(--canvas);
+  --color-card: var(--card);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--card);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-tint: var(--primary-tint);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--primary-tint);
+  --color-secondary-foreground: var(--primary);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-tint: var(--accent-tint);
+  --color-accent-foreground: var(--foreground);
+  --color-destructive: var(--bad-fg);
+  --color-destructive-foreground: var(--primary-foreground);
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--primary);
+  --color-ok: var(--ok);
+  --color-ok-fg: var(--ok-fg);
+  --color-warn: var(--warn);
+  --color-warn-fg: var(--warn-fg);
+  --color-bad: var(--bad);
+  --color-bad-fg: var(--bad-fg);
+  --color-neutral: var(--neutral);
+  --color-neutral-fg: var(--neutral-fg);
+  --color-sp-dog: var(--sp-dog);
+  --color-sp-cat: var(--sp-cat);
+  --color-sp-rabbit: var(--sp-rabbit);
+  --color-sp-hamster: var(--sp-hamster);
+  --color-overlay: var(--overlay);
+}
+
+:root {
+  --radius: 12px;
+  --canvas: #e9e7e3;
+  --background: #faf8f5;
+  --foreground: #1f2a2e;
+  --card: #ffffff;
+  --border: #e8e4de;
+  --primary: #4f7f6e;
+  --primary-hover: #3f6a5b;
+  --primary-tint: #e6efeb;
+  --primary-foreground: #ffffff;
+  --accent: #d9a07b;
+  --accent-tint: #f6e9df;
+  --muted: #f3f0eb;
+  --muted-foreground: #5f6b6e;
+  --ok: #e3f1e7;
+  --ok-fg: #2f6b45;
+  --warn: #fcf1dc;
+  --warn-fg: #8a5a12;
+  --bad: #fbe4e1;
+  --bad-fg: #9b2c2c;
+  --neutral: #eef0f1;
+  --neutral-fg: #4a5558;
+  --sp-dog: #e6efeb;
+  --sp-cat: #f6e9df;
+  --sp-rabbit: #e4e9ef;
+  --sp-hamster: #f3ead8;
+  --overlay: rgba(31, 42, 46, 0.45);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+}
