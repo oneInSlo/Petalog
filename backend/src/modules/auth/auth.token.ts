@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 
 const TOKEN_LIFETIME_SECONDS = 8 * 60 * 60;
 
+export const AUTH_COOKIE = "token";
+
 export const TOKEN_LIFETIME_MS = TOKEN_LIFETIME_SECONDS * 1000;
 
 export type TokenPayload = { userId: number; role: Role };
