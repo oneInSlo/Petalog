@@ -4,9 +4,10 @@ import { homePaths, type Role } from "./auth/roles";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { RegisterPage } from "./pages/auth/RegisterPage";
 import { HomePage } from "./pages/HomePage";
+import { OwnerDashboardPage } from "./pages/owner/OwnerDashboardPage";
 import { StaffPage } from "./pages/staff/StaffPage";
 
-const rolesWithHomePage: Role[] = ["OWNER", "RECEPTIONIST", "VETERINARIAN"];
+const rolesWithHomePage: Role[] = ["RECEPTIONIST", "VETERINARIAN"];
 
 export function App() {
   return (
@@ -20,6 +21,9 @@ export function App() {
           <Route path={homePaths[role]} element={<HomePage />} />
         </Route>
       ))}
+      <Route element={<ProtectedRoute roles={["OWNER"]} />}>
+        <Route path={homePaths.OWNER} element={<OwnerDashboardPage />} />
+      </Route>
       <Route element={<ProtectedRoute roles={["ADMIN"]} />}>
         <Route path={homePaths.ADMIN} element={<StaffPage />} />
       </Route>

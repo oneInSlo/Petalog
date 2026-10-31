@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { calculateAge, todayAtClinic } from "../../lib/dates.js";
 import {
   AppError,
   FOREIGN_KEY_VIOLATION,
@@ -21,7 +22,8 @@ function hasRecords({ _count }: AnimalWithCounts) {
 }
 
 function toAnimalResponse(animal: AnimalWithCounts) {
-  const { id, ownerId, name, species, breed, sex, dateOfBirth, microchipNumber } = animal;
+  const { id, ownerId, name, species, breed, sex, microchipNumber } = animal;
+  const dateOfBirth = animal.dateOfBirth?.toISOString().slice(0, 10) ?? null;
 
   return {
     id,
@@ -30,7 +32,8 @@ function toAnimalResponse(animal: AnimalWithCounts) {
     species,
     breed,
     sex,
-    dateOfBirth: dateOfBirth?.toISOString().slice(0, 10) ?? null,
+    dateOfBirth,
+    age: dateOfBirth ? calculateAge(dateOfBirth, todayAtClinic()) : null,
     microchipNumber,
     canDelete: !hasRecords(animal),
   };
