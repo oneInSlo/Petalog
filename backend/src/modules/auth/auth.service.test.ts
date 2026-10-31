@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "../../lib/prisma.js";
-import { loginUser, registerOwner } from "./auth.service.js";
+import { getCurrentUser, loginUser, registerOwner } from "./auth.service.js";
 
 vi.mock("../../lib/prisma.js", () => ({
   prisma: { user: { create: vi.fn(), findUnique: vi.fn() } },
@@ -65,6 +65,31 @@ describe("registerOwner", () => {
       message: "Uporabnik s tem e-poštnim naslovom že obstaja",
       details: [{ field: "email", message: "Uporabnik s tem e-poštnim naslovom že obstaja" }],
     });
+  });
+});
+
+describe("getCurrentUser", () => {
+  const notLoggedIn = { status: 401, message: "Niste prijavljeni" };
+
+  it("returns the user without the password hash", async () => {
+    findUnique.mockResolvedValue(storedUser);
+
+    const user = await getCurrentUser(1);
+
+    expect(user.id).toBe(1);
+    expect(user).not.toHaveProperty("passwordHash");
+  });
+
+  it("rejects a user that no longer exists", async () => {
+    findUnique.mockResolvedValue(null);
+
+    await expect(getCurrentUser(1)).rejects.toMatchObject(notLoggedIn);
+  });
+
+  it("rejects a deactivated user", async () => {
+    findUnique.mockResolvedValue({ ...storedUser, isActive: false });
+
+    await expect(getCurrentUser(1)).rejects.toMatchObject(notLoggedIn);
   });
 });
 

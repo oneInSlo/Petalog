@@ -7,6 +7,8 @@ import type { LoginInput, RegisterInput } from "./auth.schemas.js";
 const BCRYPT_ROUNDS = 10;
 const UNIQUE_CONSTRAINT_VIOLATION = "P2002";
 
+export const NOT_LOGGED_IN_MESSAGE = "Niste prijavljeni";
+
 // Compared against when the user does not exist, so the response time does not reveal it
 const UNKNOWN_USER_HASH = bcrypt.hashSync("unknown-user", BCRYPT_ROUNDS);
 
@@ -40,6 +42,16 @@ export async function loginUser({ email, password }: LoginInput): Promise<Public
 
   if (!user || !passwordMatches || !user.isActive) {
     throw new AppError(401, "Napačen e-poštni naslov ali geslo");
+  }
+
+  return toPublicUser(user);
+}
+
+export async function getCurrentUser(userId: number): Promise<PublicUser> {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+
+  if (!user || !user.isActive) {
+    throw new AppError(401, NOT_LOGGED_IN_MESSAGE);
   }
 
   return toPublicUser(user);
