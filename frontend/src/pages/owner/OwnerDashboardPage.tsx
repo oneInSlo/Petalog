@@ -44,11 +44,11 @@ function AnimalCard({
         </div>
       </div>
       <div className="mt-auto flex justify-end gap-2">
-        <Btn variant="secondary" size="sm" icon={Pencil} onClick={onEdit}>
+        <Btn size="sm" icon={Pencil} onClick={onEdit}>
           Uredi
         </Btn>
         <Btn
-          variant="secondary"
+          variant="dangerOutline"
           size="sm"
           icon={Trash2}
           disabled={!animal.canDelete}
