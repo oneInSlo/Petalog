@@ -19,7 +19,13 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
   }
 
   if (err instanceof AppError) {
-    res.status(err.status).json({ error: err.message });
+    res.status(err.status).json({ error: err.message, details: err.details });
+    return;
+  }
+
+  // express.json() reports a malformed request body as a SyntaxError
+  if (err instanceof SyntaxError) {
+    res.status(400).json({ error: "Neveljavni podatki" });
     return;
   }
 

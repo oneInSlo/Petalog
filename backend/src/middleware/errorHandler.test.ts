@@ -27,6 +27,19 @@ describe("errorHandler", () => {
     expect(json).toHaveBeenCalledWith({ error: "Konflikt" });
   });
 
+  it("returns the field details of an AppError", () => {
+    const details = [{ field: "email", message: "Zaseden" }];
+    const { json } = handle(new AppError(409, "Konflikt", details));
+
+    expect(json).toHaveBeenCalledWith({ error: "Konflikt", details });
+  });
+
+  it("returns status 400 for a malformed request body", () => {
+    const { status } = handle(new SyntaxError("Unexpected token"));
+
+    expect(status).toHaveBeenCalledWith(400);
+  });
+
   it("hides unexpected errors behind status 500", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     const { status, json } = handle(new Error("secret detail"));
