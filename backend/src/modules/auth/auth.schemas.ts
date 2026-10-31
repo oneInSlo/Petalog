@@ -6,7 +6,7 @@ const MAX_PASSWORD_BYTES = 72;
 
 const normalizedEmail = (message: string) => z.string({ error: message }).trim().toLowerCase();
 
-export const registerSchema = z.object({
+export const accountSchema = z.object({
   firstName: z.string({ error: "Ime je obvezno" }).trim().min(1, "Ime je obvezno"),
   lastName: z.string({ error: "Priimek je obvezen" }).trim().min(1, "Priimek je obvezen"),
   email: normalizedEmail("E-poštni naslov ni veljaven").pipe(
@@ -17,6 +17,8 @@ export const registerSchema = z.object({
     .min(MIN_PASSWORD_LENGTH, `Geslo mora imeti najmanj ${MIN_PASSWORD_LENGTH} znakov`)
     .refine((password) => Buffer.byteLength(password) <= MAX_PASSWORD_BYTES, "Geslo je predolgo"),
 });
+
+export const registerSchema = accountSchema;
 
 // No format rules here: a wrong address must get the same response as a wrong password
 export const loginSchema = z.object({

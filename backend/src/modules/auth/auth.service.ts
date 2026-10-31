@@ -18,12 +18,18 @@ function toPublicUser({ id, firstName, lastName, email, phone, role }: User): Pu
   return { id, firstName, lastName, email, phone, role };
 }
 
-export async function registerOwner({ password, ...data }: RegisterInput): Promise<PublicUser> {
+export async function registerOwner(input: RegisterInput): Promise<PublicUser> {
+  return toPublicUser(await createAccount({ ...input, role: Role.OWNER }));
+}
+
+export async function createAccount({
+  password,
+  ...data
+}: RegisterInput & { role: Role }): Promise<User> {
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
   try {
-    const user = await prisma.user.create({ data: { ...data, passwordHash, role: Role.OWNER } });
-    return toPublicUser(user);
+    return await prisma.user.create({ data: { ...data, passwordHash } });
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
