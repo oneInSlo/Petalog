@@ -1,5 +1,5 @@
-import type { Prisma } from "@prisma/client";
-import { calculateAge, todayAtClinic } from "../../lib/dates.js";
+import type { Prisma, Role } from "@prisma/client";
+import { calculateAge, toIsoDate, todayAtClinic } from "../../lib/dates.js";
 import {
   AppError,
   FOREIGN_KEY_VIOLATION,
@@ -10,6 +10,8 @@ import { prisma } from "../../lib/prisma.js";
 import type { AnimalInput } from "./animals.schemas.js";
 
 const HAS_RECORDS_MESSAGE = "Živali z zdravstveno evidenco ni mogoče izbrisati";
+const ANIMAL_NOT_FOUND_MESSAGE = "Žival ne obstaja";
+const NO_ACCESS_MESSAGE = "Nimate dostopa do te živali";
 
 const withRecordCounts = {
   _count: { select: { medicalRecords: true, vaccinations: true, allergies: true } },
@@ -23,7 +25,7 @@ function hasRecords({ _count }: AnimalWithCounts) {
 
 function toAnimalResponse(animal: AnimalWithCounts) {
   const { id, ownerId, name, species, breed, sex, microchipNumber } = animal;
-  const dateOfBirth = animal.dateOfBirth?.toISOString().slice(0, 10) ?? null;
+  const dateOfBirth = animal.dateOfBirth ? toIsoDate(animal.dateOfBirth) : null;
 
   return {
     id,
@@ -55,10 +57,23 @@ async function findOwnedAnimal(id: number, ownerId: number) {
   const animal = await prisma.animal.findUnique({ where: { id }, include: withRecordCounts });
 
   if (!animal) {
-    throw new AppError(404, "Žival ne obstaja");
+    throw new AppError(404, ANIMAL_NOT_FOUND_MESSAGE);
   }
   if (animal.ownerId !== ownerId) {
-    throw new AppError(403, "Nimate dostopa do te živali");
+    throw new AppError(403, NO_ACCESS_MESSAGE);
+  }
+  return animal;
+}
+
+/** Finds an animal for a user allowed to read medical data: owners only reach their own animals. */
+export async function findViewableAnimal(id: number, user: { id: number; role: Role }) {
+  const animal = await prisma.animal.findUnique({ where: { id } });
+
+  if (!animal) {
+    throw new AppError(404, ANIMAL_NOT_FOUND_MESSAGE);
+  }
+  if (user.role === "OWNER" && animal.ownerId !== user.id) {
+    throw new AppError(403, NO_ACCESS_MESSAGE);
   }
   return animal;
 }
