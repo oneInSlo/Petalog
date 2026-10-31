@@ -1,5 +1,30 @@
 import { describe, expect, it } from "vitest";
-import { calculateAge, todayAtClinic } from "./dates.js";
+import { addDays, addMonths, calculateAge, todayAtClinic } from "./dates.js";
+
+describe("addMonths", () => {
+  it("adds 12 months to the example from the user story", () => {
+    expect(addMonths("2026-03-10", 12)).toBe("2027-03-10");
+  });
+
+  it("crosses into the next year", () => {
+    expect(addMonths("2026-11-15", 6)).toBe("2027-05-15");
+  });
+
+  it("uses the last day of a shorter target month", () => {
+    expect(addMonths("2026-08-31", 6)).toBe("2027-02-28");
+    expect(addMonths("2027-08-31", 6)).toBe("2028-02-29");
+  });
+
+  it("moves February 29 to February 28 in a non-leap year", () => {
+    expect(addMonths("2028-02-29", 12)).toBe("2029-02-28");
+  });
+});
+
+describe("addDays", () => {
+  it("crosses month and year boundaries", () => {
+    expect(addDays("2026-12-15", 30)).toBe("2027-01-14");
+  });
+});
 
 describe("todayAtClinic", () => {
   it("uses the calendar day in Ljubljana, not in UTC", () => {

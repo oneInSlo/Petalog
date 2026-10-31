@@ -7,6 +7,26 @@ export function todayAtClinic(now: Date = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: CLINIC_TIME_ZONE }).format(now);
 }
 
+export function toIsoDate(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+/** Adds calendar months to a YYYY-MM-DD date. A day missing in the target month becomes its last day. */
+export function addMonths(date: string, months: number): string {
+  const [year, month, day] = date.split("-").map(Number);
+  const lastDayOfTargetMonth = new Date(Date.UTC(year, month - 1 + months + 1, 0)).getUTCDate();
+
+  return toIsoDate(
+    new Date(Date.UTC(year, month - 1 + months, Math.min(day, lastDayOfTargetMonth))),
+  );
+}
+
+export function addDays(date: string, days: number): string {
+  const [year, month, day] = date.split("-").map(Number);
+
+  return toIsoDate(new Date(Date.UTC(year, month - 1, day + days)));
+}
+
 /** Completed years and months between two YYYY-MM-DD dates. */
 export function calculateAge(dateOfBirth: string, today: string): Age {
   const [birthYear, birthMonth, birthDay] = dateOfBirth.split("-").map(Number);
