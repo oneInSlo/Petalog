@@ -26,15 +26,23 @@ export async function listStaff({ role }: ListStaffFilter): Promise<StaffMember[
   return users.map(toStaffMember);
 }
 
-export async function deactivateStaff(id: number, adminId: number): Promise<StaffMember> {
-  if (id === adminId) {
-    throw new AppError(409, "Svojega računa ne morete deaktivirati");
-  }
-
+async function setStaffActive(id: number, isActive: boolean): Promise<StaffMember> {
   const user = await prisma.user.findUnique({ where: { id } });
   if (!user || user.role === Role.OWNER) {
     throw new AppError(404, "Uporabnik ne obstaja");
   }
 
-  return toStaffMember(await prisma.user.update({ where: { id }, data: { isActive: false } }));
+  return toStaffMember(await prisma.user.update({ where: { id }, data: { isActive } }));
+}
+
+export async function deactivateStaff(id: number, adminId: number): Promise<StaffMember> {
+  if (id === adminId) {
+    throw new AppError(409, "Svojega računa ne morete deaktivirati");
+  }
+
+  return setStaffActive(id, false);
+}
+
+export async function activateStaff(id: number): Promise<StaffMember> {
+  return setStaffActive(id, true);
 }
