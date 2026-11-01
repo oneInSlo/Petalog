@@ -4,7 +4,7 @@ import { AppError } from "../../lib/errors.js";
 import { prisma } from "../../lib/prisma.js";
 import { findViewableAnimal } from "../animals/animals.service.js";
 import type { VaccinationInput } from "./vaccinations.schemas.js";
-import { getVaccinationStatus } from "./vaccinations.rules.js";
+import { getVaccinationStatus, selectDueVaccinations } from "./vaccinations.rules.js";
 
 const vaccinationDetails = {
   vaccine: { select: { id: true, name: true } },
@@ -66,6 +66,30 @@ export async function createVaccination(
   });
 
   return toVaccinationResponse(vaccination);
+}
+
+export async function listDueVaccinations() {
+  const vaccinations = await prisma.vaccination.findMany({
+    include: {
+      vaccine: { select: { id: true, name: true } },
+      animal: {
+        select: {
+          id: true,
+          name: true,
+          species: true,
+          owner: { select: { id: true, firstName: true, lastName: true, phone: true } },
+        },
+      },
+    },
+    orderBy: [{ vaccinationDate: "desc" }, { createdAt: "desc" }],
+  });
+  const today = todayAtClinic();
+
+  return selectDueVaccinations(vaccinations, today).map(({ id, vaccine, animal, ...dates }) => {
+    const nextDueDate = toIsoDate(dates.nextDueDate);
+
+    return { id, vaccine, animal, nextDueDate, status: getVaccinationStatus(nextDueDate, today) };
+  });
 }
 
 /** The latest vaccination with each vaccine, ordered by vaccine name. */

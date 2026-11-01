@@ -10,7 +10,10 @@ import {
   medicalRecordsRoutes,
 } from "./modules/medical-records/medical-records.routes.js";
 import { usersRoutes } from "./modules/users/users.routes.js";
-import { vaccinationsRoutes } from "./modules/vaccinations/vaccinations.routes.js";
+import {
+  dueVaccinationsRoutes,
+  vaccinationsRoutes,
+} from "./modules/vaccinations/vaccinations.routes.js";
 
 export const app = express();
 
@@ -26,6 +29,7 @@ app.use("/api/animals/:id", animalMedicalRecordsRoutes);
 app.use("/api/animals/:id", allergiesRoutes);
 app.use("/api/animals", animalsRoutes);
 app.use("/api/medical-records", medicalRecordsRoutes);
+app.use("/api/vaccinations", dueVaccinationsRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
