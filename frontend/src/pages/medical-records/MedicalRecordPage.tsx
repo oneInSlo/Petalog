@@ -1,89 +1,52 @@
-import { ArrowLeft, Lock, Plus } from "lucide-react";
+import { Lock, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useLocation, useParams } from "react-router";
+import { useLocation, useParams } from "react-router";
 import { useAuth } from "../../auth/AuthContext";
 import { AppFrame } from "../../components/ui/AppFrame";
 import { Btn } from "../../components/ui/Btn";
 import { Card } from "../../components/ui/Card";
 import { Note } from "../../components/ui/Note";
+import type { Allergy } from "../../lib/allergies";
 import type { Animal } from "../../lib/animals";
 import { api } from "../../lib/api";
 import { formatDateTime, formatTimestampDate } from "../../lib/dates";
 import { fullName, type MedicalRecord } from "../../lib/medicalRecords";
-import { AnimalHeader } from "../animals/AnimalHeader";
 import { AddAddendumDialog } from "./AddAddendumDialog";
 import { CloseRecordDialog } from "./CloseRecordDialog";
+import { AddendaList, ReadOnlyRecord } from "./ReadOnlyRecord";
 import { RecordForm, type RecordValues } from "./RecordForm";
+import { RecordLayout } from "./RecordLayout";
 import { RecordStatusBadge } from "./RecordStatusBadge";
 
-function ReadOnlyText({ label, text }: { label: string; text: string | null }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-[13px] font-semibold text-foreground">{label}</span>
-      <p className="whitespace-pre-wrap break-words text-[14px]">
-        {text ?? <span className="text-muted-foreground">Ni vpisana</span>}
-      </p>
-    </div>
-  );
-}
-
-function ReadOnlyRecord({ record }: { record: MedicalRecord }) {
-  return (
-    <div className="flex flex-col gap-5">
-      <ReadOnlyText label="Anamneza" text={record.anamnesis} />
-      <ReadOnlyText label="Diagnoza" text={record.diagnosis} />
-      <ReadOnlyText label="Terapija" text={record.therapy} />
-    </div>
-  );
-}
-
-function Addenda({ record, onAdd }: { record: MedicalRecord; onAdd: () => void }) {
-  return (
-    <div className="flex flex-col gap-3 border-t border-border pt-5">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="font-bold">Dodatki</span>
-        <Btn size="sm" variant="secondary" icon={Plus} onClick={onAdd}>
-          Dodaj dodatek
-        </Btn>
-      </div>
-      {record.addenda.length === 0 && (
-        <p className="text-[14px] text-muted-foreground">Ni dodatkov.</p>
-      )}
-      {record.addenda.map((addendum) => (
-        <div key={addendum.id} className="flex flex-col gap-1 rounded-md border border-border p-4">
-          <span className="text-[13px] font-semibold text-muted-foreground">
-            Dodatek · {fullName(addendum.author)} · {formatDateTime(addendum.createdAt)}
-          </span>
-          <span className="whitespace-pre-wrap break-words text-[14px]">{addendum.content}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
+type RecordData = { record: MedicalRecord; animal: Animal; allergies: Allergy[] };
 
 export function MedicalRecordPage() {
   const { id } = useParams();
   const { user } = useAuth();
   const location = useLocation();
-  const [record, setRecord] = useState<MedicalRecord | null>(null);
-  const [animal, setAnimal] = useState<Animal | null>(null);
+  const [data, setData] = useState<RecordData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reloadCount, setReloadCount] = useState(0);
   const [saveCount, setSaveCount] = useState(0);
-  const [justSaved, setJustSaved] = useState(Boolean(location.state?.saved));
+  const [justSaved, setJustSaved] = useState(false);
   const [closing, setClosing] = useState(false);
   const [addingAddendum, setAddingAddendum] = useState(false);
+
+  useEffect(() => {
+    setJustSaved(Boolean(location.state?.saved));
+  }, [id, location.state]);
 
   useEffect(() => {
     let cancelled = false;
     setError(null);
 
     api<{ record: MedicalRecord }>(`/medical-records/${id}`)
-      .then(async (recordData) => {
-        const animalData = await api<{ animal: Animal }>(`/animals/${recordData.record.animalId}`);
-        if (cancelled) return;
-        setRecord(recordData.record);
-        setAnimal(animalData.animal);
+      .then(async ({ record }) => {
+        const [{ animal }, { allergies }] = await Promise.all([
+          api<{ animal: Animal }>(`/animals/${record.animalId}`),
+          api<{ allergies: Allergy[] }>(`/animals/${record.animalId}/allergies`),
+        ]);
+        if (!cancelled) setData({ record, animal, allergies });
       })
       .catch((caught: Error) => {
         if (!cancelled) setError(caught.message);
@@ -106,30 +69,27 @@ export function MedicalRecordPage() {
       method: "PUT",
       body: values,
     });
-    setRecord(saved.record);
+    setData((current) => current && { ...current, record: saved.record });
     setJustSaved(true);
     // Remounts the form so that it compares later changes with the saved values
     setSaveCount((count) => count + 1);
   }
 
+  const record = data?.record;
   const isClosed = record?.status === "CLOSED";
   const isAuthor = record?.veterinarianId === user?.id;
 
   return (
-    <AppFrame title="Zdravstveni zapis" subtitle={animal?.name}>
+    <AppFrame title="Zdravstveni zapis" subtitle={data?.animal.name}>
       {error && <Note tone="bad">{error}</Note>}
-      {!record && !error && <p className="text-muted-foreground">Nalaganje ...</p>}
+      {!data && !error && <p className="text-muted-foreground">Nalaganje ...</p>}
 
-      {record && animal && (
-        <>
-          <Link
-            to={`/animals/${animal.id}`}
-            className="flex items-center gap-2 self-start text-[14px] font-semibold text-primary"
-          >
-            <ArrowLeft size={16} />
-            Nazaj na karton
-          </Link>
-          <AnimalHeader animal={animal} />
+      {data && record && (
+        <RecordLayout
+          animal={data.animal}
+          allergies={data.allergies}
+          historyKey={`${reloadCount}-${saveCount}`}
+        >
           <Card className="gap-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex min-w-0 flex-col">
@@ -155,17 +115,40 @@ export function MedicalRecordPage() {
 
             {!isClosed && isAuthor ? (
               <RecordForm
-                key={saveCount}
+                key={`${record.id}-${saveCount}`}
                 record={record}
+                allergies={data.allergies}
                 justSaved={justSaved}
                 onSave={handleSave}
                 onRequestClose={() => setClosing(true)}
               />
             ) : (
-              <ReadOnlyRecord record={record} />
+              <ReadOnlyRecord
+                anamnesis={record.anamnesis}
+                diagnosis={record.diagnosis}
+                therapy={record.therapy}
+              />
             )}
 
-            {isClosed && <Addenda record={record} onAdd={() => setAddingAddendum(true)} />}
+            {isClosed && (
+              <div className="flex flex-col gap-3 border-t border-border pt-5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-bold">Dodatki</span>
+                  <Btn
+                    size="sm"
+                    variant="secondary"
+                    icon={Plus}
+                    onClick={() => setAddingAddendum(true)}
+                  >
+                    Dodaj dodatek
+                  </Btn>
+                </div>
+                {record.addenda.length === 0 && (
+                  <p className="text-[14px] text-muted-foreground">Ni dodatkov.</p>
+                )}
+                <AddendaList addenda={record.addenda} />
+              </div>
+            )}
           </Card>
 
           {closing && (
@@ -182,7 +165,7 @@ export function MedicalRecordPage() {
               onAdded={reload}
             />
           )}
-        </>
+        </RecordLayout>
       )}
     </AppFrame>
   );
