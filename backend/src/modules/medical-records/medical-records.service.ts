@@ -39,16 +39,6 @@ async function updateDraft(id: number, data: Prisma.MedicalRecordUpdateInput) {
   }
 }
 
-export async function listMedicalRecords(animalId: number, user: { id: number; role: Role }) {
-  await findViewableAnimal(animalId, user);
-
-  return prisma.medicalRecord.findMany({
-    where: { animalId },
-    include: recordDetails,
-    orderBy: { createdAt: "desc" },
-  });
-}
-
 export async function getTimeline(
   animalId: number,
   { type }: TimelineQuery,

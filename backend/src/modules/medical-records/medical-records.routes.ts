@@ -5,7 +5,6 @@ import {
   close,
   create,
   get,
-  list,
   timeline,
   update,
 } from "./medical-records.controller.js";
@@ -14,7 +13,6 @@ const veterinarianOnly = [requireAuth, requireRole("VETERINARIAN")];
 
 export const animalMedicalRecordsRoutes = Router({ mergeParams: true });
 
-animalMedicalRecordsRoutes.get("/medical-records", veterinarianOnly, list);
 animalMedicalRecordsRoutes.post("/medical-records", veterinarianOnly, create);
 animalMedicalRecordsRoutes.get(
   "/timeline",

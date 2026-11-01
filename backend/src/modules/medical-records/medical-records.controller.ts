@@ -11,15 +11,8 @@ import {
   createMedicalRecord,
   getMedicalRecord,
   getTimeline,
-  listMedicalRecords,
   updateMedicalRecord,
 } from "./medical-records.service.js";
-
-export async function list(req: Request, res: Response) {
-  const { id } = idParamSchema.parse(req.params);
-
-  res.json({ records: await listMedicalRecords(id, req.user!) });
-}
 
 export async function timeline(req: Request, res: Response) {
   const { id } = idParamSchema.parse(req.params);
