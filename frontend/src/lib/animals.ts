@@ -1,3 +1,5 @@
+import type { VaccinationStatus } from "./vaccinations";
+
 export type Species = "DOG" | "CAT" | "RABBIT" | "HAMSTER" | "GUINEA_PIG" | "FERRET" | "BIRD";
 export type Sex = "MALE" | "FEMALE" | "UNKNOWN";
 
@@ -11,6 +13,14 @@ export type Animal = {
   age: { years: number; months: number } | null;
   microchipNumber: string | null;
   canDelete: boolean;
+};
+
+export type OwnedAnimal = Animal & {
+  nextVaccination: {
+    vaccine: { id: number; name: string };
+    nextDueDate: string;
+    status: VaccinationStatus;
+  } | null;
 };
 
 export type AnimalSearchResult = {
