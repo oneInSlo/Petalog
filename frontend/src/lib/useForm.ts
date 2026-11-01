@@ -56,7 +56,7 @@ export function useForm<T extends Values>(
       name,
       value: values[name],
       error: fieldErrors[name],
-      onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+      onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
         setValues((current) => ({ ...current, [name]: event.target.value })),
     };
   }
