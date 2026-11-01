@@ -27,4 +27,8 @@ export const animalSchema = z.object({
   ),
 });
 
+export const animalSearchSchema = z.object({
+  q: z.string({ error: "Vnesite vsaj 2 znaka" }).trim().min(2, "Vnesite vsaj 2 znaka"),
+});
+
 export type AnimalInput = z.infer<typeof animalSchema>;

@@ -1,16 +1,23 @@
 import type { Request, Response } from "express";
 import { idParamSchema } from "../../lib/validation.js";
-import { animalSchema } from "./animals.schemas.js";
+import { animalSchema, animalSearchSchema } from "./animals.schemas.js";
 import {
   createAnimal,
   deleteAnimal,
   getAnimal,
   listAnimals,
+  searchAnimals,
   updateAnimal,
 } from "./animals.service.js";
 
 export async function list(req: Request, res: Response) {
   res.json({ animals: await listAnimals(req.user!.id) });
+}
+
+export async function search(req: Request, res: Response) {
+  const { q } = animalSearchSchema.parse(req.query);
+
+  res.json({ animals: await searchAnimals(q) });
 }
 
 export async function get(req: Request, res: Response) {

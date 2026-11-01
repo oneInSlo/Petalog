@@ -88,6 +88,30 @@ export async function listAnimals(ownerId: number) {
   return animals.map(toAnimalResponse);
 }
 
+export async function searchAnimals(query: string) {
+  const contains = { contains: query, mode: "insensitive" } as const;
+
+  return prisma.animal.findMany({
+    where: {
+      OR: [
+        { name: contains },
+        { microchipNumber: contains },
+        { owner: { firstName: contains } },
+        { owner: { lastName: contains } },
+      ],
+    },
+    select: {
+      id: true,
+      name: true,
+      species: true,
+      breed: true,
+      microchipNumber: true,
+      owner: { select: { id: true, firstName: true, lastName: true } },
+    },
+    orderBy: { name: "asc" },
+  });
+}
+
 export async function getAnimal(id: number, user: { id: number; role: Role }) {
   return toAnimalResponse(await findViewableAnimal(id, user));
 }

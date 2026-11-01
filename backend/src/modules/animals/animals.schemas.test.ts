@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { animalSchema } from "./animals.schemas.js";
+import { animalSchema, animalSearchSchema } from "./animals.schemas.js";
 
 const valid = { name: "Luna", species: "DOG", sex: "FEMALE" };
 
@@ -10,6 +10,16 @@ function fieldsWithErrors(input: unknown) {
 
 afterEach(() => {
   vi.useRealTimers();
+});
+
+describe("animalSearchSchema", () => {
+  it.each([{}, { q: "a" }, { q: " a " }])("requires at least 2 characters in %j", (input) => {
+    expect(animalSearchSchema.safeParse(input).success).toBe(false);
+  });
+
+  it("trims the search text", () => {
+    expect(animalSearchSchema.parse({ q: " lu " }).q).toBe("lu");
+  });
 });
 
 describe("animalSchema", () => {
