@@ -4,6 +4,10 @@ import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import { animalsRoutes } from "./modules/animals/animals.routes.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import { healthRoutes } from "./modules/health/health.routes.js";
+import {
+  animalMedicalRecordsRoutes,
+  medicalRecordsRoutes,
+} from "./modules/medical-records/medical-records.routes.js";
 import { usersRoutes } from "./modules/users/users.routes.js";
 import { vaccinationsRoutes } from "./modules/vaccinations/vaccinations.routes.js";
 
@@ -17,7 +21,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
 // Before animalsRoutes, whose owner guard catches everything else under /api/animals
 app.use("/api/animals/:id", vaccinationsRoutes);
+app.use("/api/animals/:id", animalMedicalRecordsRoutes);
 app.use("/api/animals", animalsRoutes);
+app.use("/api/medical-records", medicalRecordsRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
