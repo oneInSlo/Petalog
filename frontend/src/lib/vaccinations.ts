@@ -1,4 +1,5 @@
 import type { Tone } from "../components/ui/tones";
+import type { Species } from "./animals";
 
 export type VaccinationStatus = "OVERDUE" | "DUE_SOON" | "VALID";
 
@@ -8,6 +9,19 @@ export type CalendarEntry = {
   id: number;
   vaccine: { id: number; name: string };
   vaccinationDate: string;
+  nextDueDate: string;
+  status: VaccinationStatus;
+};
+
+export type DueVaccination = {
+  id: number;
+  vaccine: { id: number; name: string };
+  animal: {
+    id: number;
+    name: string;
+    species: Species;
+    owner: { id: number; firstName: string; lastName: string; phone: string | null };
+  };
   nextDueDate: string;
   status: VaccinationStatus;
 };
