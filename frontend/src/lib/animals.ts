@@ -38,9 +38,13 @@ function pluralize(count: number, [one, two, few, many]: [string, string, string
   return `${count} ${many}`;
 }
 
+export function formatMonths(months: number) {
+  return pluralize(months, ["mesec", "meseca", "meseci", "mesecev"]);
+}
+
 export function formatAge(age: Animal["age"]) {
   if (!age) return "Ni podatka";
   if (age.years > 0) return pluralize(age.years, ["leto", "leti", "leta", "let"]);
-  if (age.months > 0) return pluralize(age.months, ["mesec", "meseca", "meseci", "mesecev"]);
+  if (age.months > 0) return formatMonths(age.months);
   return "Manj kot mesec";
 }

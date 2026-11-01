@@ -1,5 +1,6 @@
-import { PawPrint, Pencil, Plus, Trash2 } from "lucide-react";
+import { FileText, PawPrint, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import { useAuth } from "../../auth/AuthContext";
 import { AnimalAvatar } from "../../components/ui/AnimalAvatar";
 import { AppFrame } from "../../components/ui/AppFrame";
@@ -22,6 +23,7 @@ function AnimalCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const navigate = useNavigate();
   const description = [speciesLabels[animal.species], animal.breed].filter(Boolean).join(" · ");
 
   return (
@@ -43,7 +45,15 @@ function AnimalCard({
           <span className="font-semibold">{sexLabels[animal.sex]}</span>
         </div>
       </div>
-      <div className="mt-auto flex justify-end gap-2">
+      <div className="mt-auto flex flex-wrap justify-end gap-2">
+        <Btn
+          variant="secondary"
+          size="sm"
+          icon={FileText}
+          onClick={() => navigate(`/animals/${animal.id}`)}
+        >
+          Karton
+        </Btn>
         <Btn size="sm" icon={Pencil} onClick={onEdit}>
           Uredi
         </Btn>

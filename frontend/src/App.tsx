@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router";
 import { GuestRoute, ProtectedRoute } from "./auth/routes";
 import { homePaths, type Role } from "./auth/roles";
+import { AnimalRecordPage } from "./pages/animals/AnimalRecordPage";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { RegisterPage } from "./pages/auth/RegisterPage";
 import { HomePage } from "./pages/HomePage";
@@ -23,6 +24,9 @@ export function App() {
       ))}
       <Route element={<ProtectedRoute roles={["OWNER"]} />}>
         <Route path={homePaths.OWNER} element={<OwnerDashboardPage />} />
+      </Route>
+      <Route element={<ProtectedRoute roles={["OWNER", "RECEPTIONIST", "VETERINARIAN"]} />}>
+        <Route path="/animals/:id" element={<AnimalRecordPage />} />
       </Route>
       <Route element={<ProtectedRoute roles={["ADMIN"]} />}>
         <Route path={homePaths.ADMIN} element={<StaffPage />} />
