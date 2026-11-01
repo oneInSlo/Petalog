@@ -2,9 +2,14 @@ const CLINIC_TIME_ZONE = "Europe/Ljubljana";
 
 export type Age = { years: number; months: number };
 
+/** The calendar date of a moment at the clinic as YYYY-MM-DD. */
+export function dateAtClinic(moment: Date): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: CLINIC_TIME_ZONE }).format(moment);
+}
+
 /** Today's calendar date at the clinic as YYYY-MM-DD. */
 export function todayAtClinic(now: Date = new Date()): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: CLINIC_TIME_ZONE }).format(now);
+  return dateAtClinic(now);
 }
 
 export function toIsoDate(date: Date): string {

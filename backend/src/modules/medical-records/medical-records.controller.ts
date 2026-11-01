@@ -1,11 +1,16 @@
 import type { Request, Response } from "express";
 import { idParamSchema } from "../../lib/validation.js";
-import { addendumSchema, medicalRecordSchema } from "./medical-records.schemas.js";
+import {
+  addendumSchema,
+  medicalRecordSchema,
+  timelineQuerySchema,
+} from "./medical-records.schemas.js";
 import {
   addAddendum,
   closeMedicalRecord,
   createMedicalRecord,
   getMedicalRecord,
+  getTimeline,
   listMedicalRecords,
   updateMedicalRecord,
 } from "./medical-records.service.js";
@@ -14,6 +19,13 @@ export async function list(req: Request, res: Response) {
   const { id } = idParamSchema.parse(req.params);
 
   res.json({ records: await listMedicalRecords(id, req.user!) });
+}
+
+export async function timeline(req: Request, res: Response) {
+  const { id } = idParamSchema.parse(req.params);
+  const query = timelineQuerySchema.parse(req.query);
+
+  res.json({ timeline: await getTimeline(id, query, req.user!) });
 }
 
 export async function create(req: Request, res: Response) {
