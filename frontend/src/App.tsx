@@ -5,6 +5,8 @@ import { AnimalRecordPage } from "./pages/animals/AnimalRecordPage";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { RegisterPage } from "./pages/auth/RegisterPage";
 import { HomePage } from "./pages/HomePage";
+import { MedicalRecordPage } from "./pages/medical-records/MedicalRecordPage";
+import { NewMedicalRecordPage } from "./pages/medical-records/NewMedicalRecordPage";
 import { OwnerDashboardPage } from "./pages/owner/OwnerDashboardPage";
 import { StaffPage } from "./pages/staff/StaffPage";
 
@@ -27,6 +29,10 @@ export function App() {
       </Route>
       <Route element={<ProtectedRoute roles={["OWNER", "RECEPTIONIST", "VETERINARIAN"]} />}>
         <Route path="/animals/:id" element={<AnimalRecordPage />} />
+      </Route>
+      <Route element={<ProtectedRoute roles={["VETERINARIAN"]} />}>
+        <Route path="/animals/:id/medical-records/new" element={<NewMedicalRecordPage />} />
+        <Route path="/medical-records/:id" element={<MedicalRecordPage />} />
       </Route>
       <Route element={<ProtectedRoute roles={["ADMIN"]} />}>
         <Route path={homePaths.ADMIN} element={<StaffPage />} />
