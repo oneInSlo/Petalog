@@ -7,6 +7,10 @@ import {
   UNIQUE_CONSTRAINT_VIOLATION,
 } from "../../lib/errors.js";
 import { prisma } from "../../lib/prisma.js";
+import {
+  findNearestDueVaccination,
+  getVaccinationStatus,
+} from "../vaccinations/vaccinations.rules.js";
 import type { AnimalInput } from "./animals.schemas.js";
 
 const HAS_RECORDS_MESSAGE = "Živali z zdravstveno evidenco ni mogoče izbrisati";
@@ -81,11 +85,33 @@ export async function findViewableAnimal(id: number, user: { id: number; role: R
 export async function listAnimals(ownerId: number) {
   const animals = await prisma.animal.findMany({
     where: { ownerId },
-    include: withRecordCounts,
+    include: {
+      ...withRecordCounts,
+      vaccinations: {
+        include: { vaccine: { select: { id: true, name: true } } },
+        orderBy: [{ vaccinationDate: "desc" }, { createdAt: "desc" }],
+      },
+    },
     orderBy: { name: "asc" },
   });
+  const today = todayAtClinic();
 
-  return animals.map(toAnimalResponse);
+  return animals.map((animal) => {
+    const nearest = findNearestDueVaccination(animal.vaccinations);
+    const nextDueDate = nearest && toIsoDate(nearest.nextDueDate);
+
+    return {
+      ...toAnimalResponse(animal),
+      nextVaccination:
+        nearest && nextDueDate
+          ? {
+              vaccine: nearest.vaccine,
+              nextDueDate,
+              status: getVaccinationStatus(nextDueDate, today),
+            }
+          : null,
+    };
+  });
 }
 
 export async function searchAnimals(query: string) {

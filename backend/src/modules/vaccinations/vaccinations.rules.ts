@@ -11,13 +11,13 @@ export function getVaccinationStatus(nextDueDate: string, today: string): Vaccin
   return "VALID";
 }
 
+type DatedVaccination = { animalId: number; vaccineId: number; nextDueDate: Date };
+
 /**
- * Keeps the overdue or soon due vaccinations, oldest due date first. Expects the newest vaccination
- * first, because only the latest one of each vaccine counts: a later dose replaces an expired one.
+ * The latest vaccination of each vaccine per animal, oldest due date first. Expects the newest
+ * vaccination first, because a later dose replaces an expired one.
  */
-export function selectDueVaccinations<
-  T extends { animalId: number; vaccineId: number; nextDueDate: Date },
->(newestFirst: T[], today: string) {
+function latestByDueDate<T extends DatedVaccination>(newestFirst: T[]) {
   const latest = new Map<string, T>();
   for (const vaccination of newestFirst) {
     const key = `${vaccination.animalId}-${vaccination.vaccineId}`;
@@ -26,7 +26,17 @@ export function selectDueVaccinations<
     }
   }
 
-  return [...latest.values()]
-    .filter(({ nextDueDate }) => getVaccinationStatus(toIsoDate(nextDueDate), today) !== "VALID")
-    .sort((a, b) => a.nextDueDate.getTime() - b.nextDueDate.getTime());
+  return [...latest.values()].sort((a, b) => a.nextDueDate.getTime() - b.nextDueDate.getTime());
+}
+
+/** Keeps the overdue or soon due vaccinations, oldest due date first. */
+export function selectDueVaccinations<T extends DatedVaccination>(newestFirst: T[], today: string) {
+  return latestByDueDate(newestFirst).filter(
+    ({ nextDueDate }) => getVaccinationStatus(toIsoDate(nextDueDate), today) !== "VALID",
+  );
+}
+
+/** The vaccination whose due date comes first, which is an expired one if there is any. */
+export function findNearestDueVaccination<T extends DatedVaccination>(newestFirst: T[]) {
+  return latestByDueDate(newestFirst)[0] ?? null;
 }
