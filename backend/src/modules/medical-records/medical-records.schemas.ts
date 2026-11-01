@@ -20,5 +20,10 @@ export const addendumSchema = z.object({
   content: requiredText("Vsebina dodatka je obvezna"),
 });
 
+export const timelineQuerySchema = z.object({
+  type: z.enum(["RECORD", "VACCINATION"], { error: "Neveljavna vrsta vnosa" }).optional(),
+});
+
 export type MedicalRecordInput = z.infer<typeof medicalRecordSchema>;
 export type AddendumInput = z.infer<typeof addendumSchema>;
+export type TimelineQuery = z.infer<typeof timelineQuerySchema>;

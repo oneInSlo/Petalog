@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser";
 import express from "express";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
+import { allergiesRoutes } from "./modules/allergies/allergies.routes.js";
 import { animalsRoutes } from "./modules/animals/animals.routes.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import { healthRoutes } from "./modules/health/health.routes.js";
@@ -22,6 +23,7 @@ app.use("/api/users", usersRoutes);
 // Before animalsRoutes, whose owner guard catches everything else under /api/animals
 app.use("/api/animals/:id", vaccinationsRoutes);
 app.use("/api/animals/:id", animalMedicalRecordsRoutes);
+app.use("/api/animals/:id", allergiesRoutes);
 app.use("/api/animals", animalsRoutes);
 app.use("/api/medical-records", medicalRecordsRoutes);
 

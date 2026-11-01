@@ -2,7 +2,8 @@ import type { Prisma, Role } from "@prisma/client";
 import { AppError, isPrismaError, RECORD_NOT_FOUND } from "../../lib/errors.js";
 import { prisma } from "../../lib/prisma.js";
 import { findViewableAnimal } from "../animals/animals.service.js";
-import type { AddendumInput, MedicalRecordInput } from "./medical-records.schemas.js";
+import type { AddendumInput, MedicalRecordInput, TimelineQuery } from "./medical-records.schemas.js";
+import { mergeTimeline } from "./medical-records.timeline.js";
 
 const CLOSED_RECORD_MESSAGE = "Zaključenega zapisa ni mogoče urejati";
 
@@ -46,6 +47,32 @@ export async function listMedicalRecords(animalId: number, user: { id: number; r
     include: recordDetails,
     orderBy: { createdAt: "desc" },
   });
+}
+
+export async function getTimeline(
+  animalId: number,
+  { type }: TimelineQuery,
+  user: { id: number; role: Role },
+) {
+  await findViewableAnimal(animalId, user);
+
+  const [records, vaccinations] = await Promise.all([
+    type === "VACCINATION"
+      ? []
+      : prisma.medicalRecord.findMany({
+          // Drafts stay between the veterinarians until they are closed
+          where: user.role === "OWNER" ? { animalId, status: "CLOSED" } : { animalId },
+          include: recordDetails,
+        }),
+    type === "RECORD"
+      ? []
+      : prisma.vaccination.findMany({
+          where: { animalId },
+          include: { vaccine: { select: { id: true, name: true } }, veterinarian: personName },
+        }),
+  ]);
+
+  return mergeTimeline(records, vaccinations);
 }
 
 export async function getMedicalRecord(id: number) {

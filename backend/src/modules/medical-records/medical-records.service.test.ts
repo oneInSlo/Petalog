@@ -5,14 +5,16 @@ import {
   addAddendum,
   closeMedicalRecord,
   createMedicalRecord,
+  getTimeline,
   updateMedicalRecord,
 } from "./medical-records.service.js";
 
 vi.mock("../../lib/prisma.js", () => ({
   prisma: {
     animal: { findUnique: vi.fn() },
-    medicalRecord: { create: vi.fn(), findUnique: vi.fn(), update: vi.fn() },
+    medicalRecord: { create: vi.fn(), findMany: vi.fn(), findUnique: vi.fn(), update: vi.fn() },
     recordAddendum: { create: vi.fn() },
+    vaccination: { findMany: vi.fn() },
   },
 }));
 
@@ -137,6 +139,47 @@ describe("closeMedicalRecord", () => {
     findInDb.mockResolvedValue(closed);
 
     await expect(closeMedicalRecord(1, AUTHOR_ID)).rejects.toMatchObject({ status: 409 });
+  });
+});
+
+describe("getTimeline", () => {
+  const findRecords = vi.mocked(prisma.medicalRecord.findMany);
+  const findVaccinations = vi.mocked(prisma.vaccination.findMany);
+  const veterinarian = { id: AUTHOR_ID, role: "VETERINARIAN" as const };
+  const owner = { id: 4, role: "OWNER" as const };
+
+  beforeEach(() => {
+    findAnimal.mockResolvedValue({ id: 1, ownerId: 4 } as never);
+    findRecords.mockResolvedValue([]);
+    findVaccinations.mockResolvedValue([]);
+  });
+
+  it("shows drafts to a veterinarian", async () => {
+    await getTimeline(1, {}, veterinarian);
+
+    expect(findRecords.mock.calls[0][0]?.where).toEqual({ animalId: 1 });
+  });
+
+  it("hides drafts from the owner", async () => {
+    await getTimeline(1, {}, owner);
+
+    expect(findRecords.mock.calls[0][0]?.where).toEqual({ animalId: 1, status: "CLOSED" });
+  });
+
+  it("rejects another owner with status 403", async () => {
+    await expect(getTimeline(1, {}, { id: 5, role: "OWNER" })).rejects.toMatchObject({
+      status: 403,
+    });
+    expect(findRecords).not.toHaveBeenCalled();
+  });
+
+  it("reads only the requested type of entry", async () => {
+    await getTimeline(1, { type: "RECORD" }, veterinarian);
+    expect(findVaccinations).not.toHaveBeenCalled();
+
+    findRecords.mockClear();
+    await getTimeline(1, { type: "VACCINATION" }, veterinarian);
+    expect(findRecords).not.toHaveBeenCalled();
   });
 });
 
