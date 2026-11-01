@@ -2,48 +2,19 @@ import { CheckCircle2, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { useAuth } from "../../auth/AuthContext";
-import { AnimalAvatar } from "../../components/ui/AnimalAvatar";
 import { AppFrame } from "../../components/ui/AppFrame";
 import { Badge } from "../../components/ui/Badge";
 import { Btn } from "../../components/ui/Btn";
 import { Card } from "../../components/ui/Card";
 import { Note } from "../../components/ui/Note";
 import { Table } from "../../components/ui/Table";
-import { formatAge, sexLabels, speciesLabels, type Animal } from "../../lib/animals";
+import type { Animal } from "../../lib/animals";
 import { api } from "../../lib/api";
 import { formatDate } from "../../lib/dates";
 import { statusLabels, statusTones, type CalendarEntry } from "../../lib/vaccinations";
 import { AddVaccinationDialog } from "./AddVaccinationDialog";
-
-function AnimalHeader({ animal }: { animal: Animal }) {
-  const description = [
-    speciesLabels[animal.species],
-    animal.breed,
-    sexLabels[animal.sex],
-    animal.age && formatAge(animal.age),
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
-  return (
-    <Card className="gap-4 md:flex-row md:items-center md:justify-between">
-      <div className="flex items-center gap-4">
-        <AnimalAvatar name={animal.name} species={animal.species} size={72} />
-        <div className="flex min-w-0 flex-col">
-          <span className="break-words font-display text-[28px] font-bold leading-tight">
-            {animal.name}
-          </span>
-          <span className="text-[14px] text-muted-foreground">{description}</span>
-        </div>
-      </div>
-      {animal.microchipNumber && (
-        <span className="text-[13px] text-muted-foreground">
-          Mikročip: <span className="font-semibold text-foreground">{animal.microchipNumber}</span>
-        </span>
-      )}
-    </Card>
-  );
-}
+import { AnimalHeader } from "./AnimalHeader";
+import { MedicalRecordsCard } from "./MedicalRecordsCard";
 
 function StatusBadge({ entry }: { entry: CalendarEntry }) {
   return <Badge tone={statusTones[entry.status]}>{statusLabels[entry.status]}</Badge>;
@@ -153,6 +124,7 @@ export function AnimalRecordPage() {
       {animal && calendar && (
         <>
           <AnimalHeader animal={animal} />
+          {user?.role === "VETERINARIAN" && <MedicalRecordsCard animalId={animal.id} />}
           <Card className="gap-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <h3 className="text-[17px] font-bold text-foreground">Cepljenja</h3>
