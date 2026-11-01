@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getVaccinationStatus, selectDueVaccinations } from "./vaccinations.rules.js";
+import {
+  findNearestDueVaccination,
+  getVaccinationStatus,
+  selectDueVaccinations,
+} from "./vaccinations.rules.js";
 
 const TODAY = "2026-03-10";
 
@@ -22,6 +26,30 @@ describe("getVaccinationStatus", () => {
 
   it("is valid from the 31st day", () => {
     expect(getVaccinationStatus("2026-04-10", TODAY)).toBe("VALID");
+  });
+});
+
+describe("findNearestDueVaccination", () => {
+  it("picks the vaccine with the earliest due date", () => {
+    const nearest = findNearestDueVaccination([
+      vaccination(1, 1, "2027-03-01"),
+      vaccination(1, 2, "2026-05-01"),
+    ]);
+
+    expect(nearest?.vaccineId).toBe(2);
+  });
+
+  it("ignores an expired vaccination replaced by a later dose", () => {
+    const nearest = findNearestDueVaccination([
+      vaccination(1, 1, "2027-03-01"),
+      vaccination(1, 1, "2025-03-01"),
+    ]);
+
+    expect(nearest?.nextDueDate).toEqual(new Date("2027-03-01"));
+  });
+
+  it("is null without vaccinations", () => {
+    expect(findNearestDueVaccination([])).toBeNull();
   });
 });
 

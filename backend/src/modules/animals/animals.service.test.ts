@@ -67,19 +67,45 @@ beforeEach(() => {
 });
 
 describe("listAnimals", () => {
+  const listed = { ...stored, vaccinations: [] };
+
   it("returns only the owner's animals with the date as YYYY-MM-DD", async () => {
-    findMany.mockResolvedValue([stored]);
+    findMany.mockResolvedValue([listed]);
 
     const animals = await listAnimals(OWNER_ID);
 
     expect(findMany.mock.calls[0][0]?.where).toEqual({ ownerId: OWNER_ID });
     expect(animals[0].dateOfBirth).toBe("2021-04-12");
+    expect(animals[0].nextVaccination).toBeNull();
+  });
+
+  it("adds the nearest vaccination with its status", async () => {
+    const vaccination = (vaccineId: number, nextDueDate: string) => ({
+      animalId: 1,
+      vaccineId,
+      nextDueDate: new Date(nextDueDate),
+      vaccine: { id: vaccineId, name: `Cepivo ${vaccineId}` },
+    });
+    findMany.mockResolvedValue([
+      {
+        ...stored,
+        vaccinations: [vaccination(1, "2099-01-01"), vaccination(2, "2020-01-01")],
+      },
+    ] as never);
+
+    const [animal] = await listAnimals(OWNER_ID);
+
+    expect(animal.nextVaccination).toEqual({
+      vaccine: { id: 2, name: "Cepivo 2" },
+      nextDueDate: "2020-01-01",
+      status: "OVERDUE",
+    });
   });
 
   it.each(["medicalRecords", "vaccinations", "allergies"])(
     "marks an animal with %s as not deletable",
     async (relation) => {
-      findMany.mockResolvedValue([stored, { ...stored, _count: { ...noRecords, [relation]: 1 } }]);
+      findMany.mockResolvedValue([listed, { ...listed, _count: { ...noRecords, [relation]: 1 } }]);
 
       const animals = await listAnimals(OWNER_ID);
 

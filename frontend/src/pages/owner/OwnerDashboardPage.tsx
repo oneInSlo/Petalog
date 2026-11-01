@@ -1,29 +1,60 @@
-import { FileText, PawPrint, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  Clock,
+  FileText,
+  PawPrint,
+  Pencil,
+  Plus,
+  Trash2,
+  type LucideIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../auth/AuthContext";
 import { AnimalAvatar } from "../../components/ui/AnimalAvatar";
 import { AppFrame } from "../../components/ui/AppFrame";
+import { Badge } from "../../components/ui/Badge";
 import { Btn } from "../../components/ui/Btn";
 import { Card } from "../../components/ui/Card";
 import { Note } from "../../components/ui/Note";
-import { formatAge, sexLabels, speciesLabels, type Animal } from "../../lib/animals";
+import { formatAge, speciesLabels, type OwnedAnimal } from "../../lib/animals";
 import { api } from "../../lib/api";
+import { formatDate } from "../../lib/dates";
+import { statusLabels, statusTones, type VaccinationStatus } from "../../lib/vaccinations";
 import { AnimalDialog } from "./AnimalDialog";
 import { DeleteAnimalDialog } from "./DeleteAnimalDialog";
 
-type EditState = { animal: Animal | null } | null;
+type EditState = { animal: OwnedAnimal | null } | null;
+
+const statusIcons: Record<VaccinationStatus, LucideIcon> = {
+  OVERDUE: AlertTriangle,
+  DUE_SOON: Clock,
+  VALID: Check,
+};
+
+function VaccinationBadge({ status }: { status: VaccinationStatus }) {
+  const Icon = statusIcons[status];
+
+  return (
+    <Badge tone={statusTones[status]}>
+      <Icon size={13} />
+      {status === "OVERDUE" ? "Cepljenje zapadlo" : statusLabels[status]}
+    </Badge>
+  );
+}
 
 function AnimalCard({
   animal,
   onEdit,
   onDelete,
 }: {
-  animal: Animal;
+  animal: OwnedAnimal;
   onEdit: () => void;
   onDelete: () => void;
 }) {
   const navigate = useNavigate();
+  const { nextVaccination } = animal;
   const description = [speciesLabels[animal.species], animal.breed].filter(Boolean).join(" · ");
 
   return (
@@ -41,10 +72,17 @@ function AnimalCard({
           <span className="font-semibold">{formatAge(animal.age)}</span>
         </div>
         <div className="flex justify-between gap-4">
-          <span className="text-muted-foreground">Spol</span>
-          <span className="font-semibold">{sexLabels[animal.sex]}</span>
+          <span className="text-muted-foreground">Naslednje cepljenje</span>
+          <span className="text-right font-semibold">
+            {nextVaccination ? formatDate(nextVaccination.nextDueDate) : "Ni podatka"}
+          </span>
         </div>
       </div>
+      {nextVaccination ? (
+        <VaccinationBadge status={nextVaccination.status} />
+      ) : (
+        <Badge tone="neutral">Ni zabeleženih cepljenj</Badge>
+      )}
       <div className="mt-auto flex flex-wrap justify-end gap-2">
         <Btn
           variant="secondary"
@@ -74,17 +112,17 @@ function AnimalCard({
 
 export function OwnerDashboardPage() {
   const { user } = useAuth();
-  const [animals, setAnimals] = useState<Animal[] | null>(null);
+  const [animals, setAnimals] = useState<OwnedAnimal[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reloadCount, setReloadCount] = useState(0);
   const [editing, setEditing] = useState<EditState>(null);
-  const [deleting, setDeleting] = useState<Animal | null>(null);
+  const [deleting, setDeleting] = useState<OwnedAnimal | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setError(null);
 
-    api<{ animals: Animal[] }>("/animals")
+    api<{ animals: OwnedAnimal[] }>("/animals")
       .then((data) => {
         if (!cancelled) setAnimals(data.animals);
       })
@@ -147,6 +185,12 @@ export function OwnerDashboardPage() {
             />
           ))}
         </div>
+      )}
+
+      {animals && animals.length > 0 && (
+        <Card title="Prihodnji termini">
+          <p className="text-muted-foreground">Ni prihodnjih terminov</p>
+        </Card>
       )}
 
       {editing && (
