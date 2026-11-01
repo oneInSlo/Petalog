@@ -4,8 +4,13 @@ import { vaccinationSchema } from "./vaccinations.schemas.js";
 import {
   createVaccination,
   getVaccinationCalendar,
+  listDueVaccinations,
   listVaccinesForAnimal,
 } from "./vaccinations.service.js";
+
+export async function listDue(_req: Request, res: Response) {
+  res.json({ vaccinations: await listDueVaccinations() });
+}
 
 export async function listVaccines(req: Request, res: Response) {
   const { id } = idParamSchema.parse(req.params);

@@ -6,6 +6,7 @@ import {
   deleteAnimal,
   getAnimal,
   listAnimals,
+  searchAnimals,
   updateAnimal,
 } from "./animals.service.js";
 
@@ -85,6 +86,24 @@ describe("listAnimals", () => {
       expect(animals.map((animal) => animal.canDelete)).toEqual([true, false]);
     },
   );
+});
+
+describe("searchAnimals", () => {
+  it("searches the animal name, owner names and microchip, ignoring case", async () => {
+    findMany.mockResolvedValue([]);
+
+    await searchAnimals("lu");
+
+    const contains = { contains: "lu", mode: "insensitive" };
+    expect(findMany.mock.calls[0][0]?.where).toEqual({
+      OR: [
+        { name: contains },
+        { microchipNumber: contains },
+        { owner: { firstName: contains } },
+        { owner: { lastName: contains } },
+      ],
+    });
+  });
 });
 
 describe("getAnimal", () => {
