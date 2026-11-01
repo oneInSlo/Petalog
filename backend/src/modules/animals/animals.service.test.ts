@@ -91,19 +91,29 @@ describe("getAnimal", () => {
   it("returns the owner's animal", async () => {
     findUnique.mockResolvedValue(stored);
 
-    expect((await getAnimal(1, OWNER_ID)).name).toBe("Luna");
+    expect((await getAnimal(1, { id: OWNER_ID, role: "OWNER" })).name).toBe("Luna");
+  });
+
+  it.each(["VETERINARIAN", "RECEPTIONIST"] as const)("returns any animal to a %s", async (role) => {
+    findUnique.mockResolvedValue(stored);
+
+    expect((await getAnimal(1, { id: 2, role })).name).toBe("Luna");
   });
 
   it("rejects another owner's animal with status 403", async () => {
     findUnique.mockResolvedValue(stored);
 
-    await expect(getAnimal(1, OTHER_OWNER_ID)).rejects.toMatchObject({ status: 403 });
+    await expect(getAnimal(1, { id: OTHER_OWNER_ID, role: "OWNER" })).rejects.toMatchObject({
+      status: 403,
+    });
   });
 
   it("returns status 404 for an unknown animal", async () => {
     findUnique.mockResolvedValue(null);
 
-    await expect(getAnimal(99, OWNER_ID)).rejects.toMatchObject({ status: 404 });
+    await expect(getAnimal(99, { id: OWNER_ID, role: "OWNER" })).rejects.toMatchObject({
+      status: 404,
+    });
   });
 });
 
