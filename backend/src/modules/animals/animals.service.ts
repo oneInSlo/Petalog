@@ -67,7 +67,7 @@ async function findOwnedAnimal(id: number, ownerId: number) {
 
 /** Finds an animal for a user allowed to read medical data: owners only reach their own animals. */
 export async function findViewableAnimal(id: number, user: { id: number; role: Role }) {
-  const animal = await prisma.animal.findUnique({ where: { id } });
+  const animal = await prisma.animal.findUnique({ where: { id }, include: withRecordCounts });
 
   if (!animal) {
     throw new AppError(404, ANIMAL_NOT_FOUND_MESSAGE);
@@ -88,8 +88,8 @@ export async function listAnimals(ownerId: number) {
   return animals.map(toAnimalResponse);
 }
 
-export async function getAnimal(id: number, ownerId: number) {
-  return toAnimalResponse(await findOwnedAnimal(id, ownerId));
+export async function getAnimal(id: number, user: { id: number; role: Role }) {
+  return toAnimalResponse(await findViewableAnimal(id, user));
 }
 
 export async function createAnimal(input: AnimalInput, ownerId: number) {

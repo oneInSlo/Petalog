@@ -15,7 +15,7 @@ app.use(cookieParser());
 app.use("/api/health", healthRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
-// Before animalsRoutes, which only allows owners on everything under /api/animals
+// Before animalsRoutes, whose owner guard catches everything else under /api/animals
 app.use("/api/animals/:id", vaccinationsRoutes);
 app.use("/api/animals", animalsRoutes);
 

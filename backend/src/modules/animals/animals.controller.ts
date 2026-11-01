@@ -16,7 +16,7 @@ export async function list(req: Request, res: Response) {
 export async function get(req: Request, res: Response) {
   const { id } = idParamSchema.parse(req.params);
 
-  res.json({ animal: await getAnimal(id, req.user!.id) });
+  res.json({ animal: await getAnimal(id, req.user!) });
 }
 
 export async function create(req: Request, res: Response) {
