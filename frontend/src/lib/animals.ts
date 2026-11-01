@@ -38,6 +38,17 @@ function pluralize(count: number, [one, two, few, many]: [string, string, string
   return `${count} ${many}`;
 }
 
+export function describeAnimal(animal: Animal) {
+  return [
+    speciesLabels[animal.species],
+    animal.breed,
+    sexLabels[animal.sex],
+    animal.age && formatAge(animal.age),
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
 export function formatMonths(months: number) {
   return pluralize(months, ["mesec", "meseca", "meseci", "mesecev"]);
 }

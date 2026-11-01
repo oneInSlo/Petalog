@@ -1,8 +1,9 @@
-import { CheckCircle2, Save } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Info, Save } from "lucide-react";
 import { z } from "zod";
 import { Btn } from "../../components/ui/Btn";
 import { Note } from "../../components/ui/Note";
 import { TextareaField } from "../../components/ui/TextareaField";
+import { formatAllergy, type Allergy } from "../../lib/allergies";
 import type { MedicalRecord } from "../../lib/medicalRecords";
 import { useForm } from "../../lib/useForm";
 
@@ -16,11 +17,13 @@ export type RecordValues = z.infer<typeof recordSchema>;
 
 export function RecordForm({
   record,
+  allergies,
   justSaved = false,
   onSave,
   onRequestClose,
 }: {
   record: MedicalRecord | null;
+  allergies: Allergy[];
   justSaved?: boolean;
   onSave: (values: RecordValues) => Promise<void>;
   onRequestClose?: () => void;
@@ -47,6 +50,15 @@ export function RecordForm({
       {justSaved && !isDirty && <Note tone="ok">Osnutek je shranjen.</Note>}
       <TextareaField label="Anamneza" rows={3} {...field("anamnesis")} />
       <TextareaField label="Diagnoza" rows={2} {...field("diagnosis")} />
+      {allergies.length > 0 ? (
+        <Note tone="warn" icon={AlertTriangle}>
+          Alergije: {allergies.map(formatAllergy).join(", ")}
+        </Note>
+      ) : (
+        <Note tone="neutral" icon={Info}>
+          Ni zabeleženih alergij
+        </Note>
+      )}
       <TextareaField label="Terapija (neobvezno)" rows={5} {...field("therapy")} />
       <div className="flex flex-col items-end gap-2 border-t border-border pt-5">
         <div className="flex flex-wrap justify-end gap-3">

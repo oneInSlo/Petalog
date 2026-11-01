@@ -1,6 +1,6 @@
 import { CheckCircle2, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { useAuth } from "../../auth/AuthContext";
 import { AppFrame } from "../../components/ui/AppFrame";
 import { Badge } from "../../components/ui/Badge";
@@ -8,13 +8,18 @@ import { Btn } from "../../components/ui/Btn";
 import { Card } from "../../components/ui/Card";
 import { Note } from "../../components/ui/Note";
 import { Table } from "../../components/ui/Table";
+import { Tabs } from "../../components/ui/Tabs";
 import type { Animal } from "../../lib/animals";
 import { api } from "../../lib/api";
 import { formatDate } from "../../lib/dates";
 import { statusLabels, statusTones, type CalendarEntry } from "../../lib/vaccinations";
 import { AddVaccinationDialog } from "./AddVaccinationDialog";
+import { AllergiesCard } from "./AllergiesCard";
 import { AnimalHeader } from "./AnimalHeader";
-import { MedicalRecordsCard } from "./MedicalRecordsCard";
+import { Timeline } from "./Timeline";
+
+const TABS = ["Časovnica", "Cepljenja"];
+const TIMELINE_TAB = 0;
 
 function StatusBadge({ entry }: { entry: CalendarEntry }) {
   return <Badge tone={statusTones[entry.status]}>{statusLabels[entry.status]}</Badge>;
@@ -76,6 +81,8 @@ function AddedNote({ added, calendar }: { added: CalendarEntry; calendar: Calend
 export function AnimalRecordPage() {
   const { id } = useParams();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [tab, setTab] = useState(TIMELINE_TAB);
   const [animal, setAnimal] = useState<Animal | null>(null);
   const [calendar, setCalendar] = useState<CalendarEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -116,6 +123,11 @@ export function AnimalRecordPage() {
     setAdding(true);
   }
 
+  const isVeterinarian = user?.role === "VETERINARIAN";
+  // Receptionists only work with the vaccination calendar, not with medical data
+  const seesMedicalData = user?.role !== "RECEPTIONIST";
+  const showTimeline = seesMedicalData && tab === TIMELINE_TAB;
+
   return (
     <AppFrame title="Karton živali" subtitle={animal?.name}>
       {error && <Note tone="bad">{error}</Note>}
@@ -124,18 +136,38 @@ export function AnimalRecordPage() {
       {animal && calendar && (
         <>
           <AnimalHeader animal={animal} />
-          {user?.role === "VETERINARIAN" && <MedicalRecordsCard animalId={animal.id} />}
+          {seesMedicalData && <AllergiesCard animalId={animal.id} canAdd={isVeterinarian} />}
           <Card className="gap-6">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <h3 className="text-[17px] font-bold text-foreground">Cepljenja</h3>
-              {user?.role === "VETERINARIAN" && (
-                <Btn icon={Plus} onClick={startAdding}>
-                  Dodaj cepljenje
-                </Btn>
-              )}
-            </div>
-            {added && <AddedNote added={added} calendar={calendar} />}
-            <VaccinationCalendar calendar={calendar} />
+            {seesMedicalData && <Tabs items={TABS} active={tab} onSelect={setTab} />}
+            {showTimeline ? (
+              <Timeline
+                animalId={animal.id}
+                canOpenRecords={isVeterinarian}
+                action={
+                  isVeterinarian && (
+                    <Btn
+                      icon={Plus}
+                      onClick={() => navigate(`/animals/${animal.id}/medical-records/new`)}
+                    >
+                      Nov zapis
+                    </Btn>
+                  )
+                }
+              />
+            ) : (
+              <>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <h3 className="text-[17px] font-bold text-foreground">Cepljenja</h3>
+                  {isVeterinarian && (
+                    <Btn icon={Plus} onClick={startAdding}>
+                      Dodaj cepljenje
+                    </Btn>
+                  )}
+                </div>
+                {added && <AddedNote added={added} calendar={calendar} />}
+                <VaccinationCalendar calendar={calendar} />
+              </>
+            )}
           </Card>
           {adding && (
             <AddVaccinationDialog
