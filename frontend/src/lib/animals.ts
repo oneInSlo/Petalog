@@ -13,6 +13,15 @@ export type Animal = {
   canDelete: boolean;
 };
 
+export type AnimalSearchResult = {
+  id: number;
+  name: string;
+  species: Species;
+  breed: string | null;
+  microchipNumber: string | null;
+  owner: { id: number; firstName: string; lastName: string };
+};
+
 export const speciesLabels: Record<Species, string> = {
   DOG: "Pes",
   CAT: "Mačka",
@@ -30,7 +39,7 @@ export const sexLabels: Record<Sex, string> = {
 };
 
 // Slovene nouns have separate forms for 1, 2, 3-4 and all other counts, decided by the last two digits
-function pluralize(count: number, [one, two, few, many]: [string, string, string, string]) {
+export function pluralize(count: number, [one, two, few, many]: [string, string, string, string]) {
   const lastTwoDigits = count % 100;
   if (lastTwoDigits === 1) return `${count} ${one}`;
   if (lastTwoDigits === 2) return `${count} ${two}`;
